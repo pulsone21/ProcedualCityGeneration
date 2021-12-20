@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace LSystem
         [SerializeField] private Material lineMaterial;
         [SerializeField] private List<Vector3Int> position = new List<Vector3Int>();
         [SerializeField] private List<GameObject> lineEndpoints = new List<GameObject>();
-
+        private LineHelper lH;
         private int length = 1;
         public int Length
         {
@@ -52,13 +53,13 @@ namespace LSystem
         public void VisualizeSequenze(string sequence)
         {
             ConvertSentenceToLinesAndPoints(sequence);
-
+            FixLinesAndPoints();
         }
 
         //Step 1 Draw Lines and Points
         public void ConvertSentenceToLinesAndPoints(string sequence)
         {
-            LineHelper lH = new LineHelper(transform, lineMaterial, lineColor);
+            lH = new LineHelper(transform, lineMaterial, lineColor);
             Stack<AgentParameters> savePoints = new Stack<AgentParameters>();
             Vector3 currentPostion = Vector3.zero;
             Vector3 direction = Vector3.forward;
@@ -114,14 +115,21 @@ namespace LSystem
 
         //Step 2 Fix Lines -> Clear Paralelle lines, snap Endpoints to Roads if needed.
 
+        private void FixLinesAndPoints()
+        {
+            lH.MergeAlignedLines(lH.GetVerticalLines());
+            lH.MergeAlignedLines(lH.GetHorizontalLines());
+            //FixPoints();
 
-
-
+        }
 
         private void FixPoints()
         {
             foreach (GameObject gO in lineEndpoints)
             {
+                Vector3Int currPos = Vector3Int.RoundToInt(gO.transform.position);
+
+
                 //do something
             }
             //Loop through all Points an Check if there is an Line in the nearer radius - maybe 2 Vector3Ints 
@@ -190,10 +198,21 @@ namespace LSystem
         //     roadHelper.FixRoads();
         // }
 
+        public void ClearHelperGameObjects()
+        {
+            int childCount = this.transform.childCount - 1;
+            while (childCount != -1)
+            {
+                DestroyImmediate(this.transform.GetChild(childCount).gameObject);
+                childCount = this.transform.childCount - 1;
+            }
+        }
+
         public void ClearVisulization()
         {
             position.Clear();
             Length = 8;
+            ClearHelperGameObjects();
             roadHelper.ClearRoads();
         }
     }

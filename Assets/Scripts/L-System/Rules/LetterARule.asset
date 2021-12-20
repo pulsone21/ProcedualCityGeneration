@@ -18,4 +18,4 @@ MonoBehaviour:
   - '[+F]F[-F]'
   - '[-F]F[+F]'
   - '[-F]FF[+F]'
-  randomResult: 1
+  randomResult: 0
