@@ -14,7 +14,6 @@ namespace LSystem
 
             if (GUILayout.Button("Generate Sentence"))
             {
-                Debug.Log("Generating Sentence");
                 lSystemGenerator.Generate();
             }
         }

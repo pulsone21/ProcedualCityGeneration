@@ -24,10 +24,24 @@ namespace LSystem
             for (int i = 0; i <= length; i++)
             {
                 Vector3Int position = Vector3Int.RoundToInt(startPos + direction * i);
-                if (roadDictionary.ContainsKey(position)) continue;
-                GameObject road = BuildRoad(roadStraight, position, rotation, transform);
-                roadDictionary.Add(position, road);
-                allRoadPositions.Add(position);
+
+            }
+        }
+
+        public void PlaceRoadOnLine(Line line)
+        {
+            List<Vector3Int> linePos = line.GetAllLinePoints();
+            Quaternion rotation = Quaternion.identity;
+            if (line.lineDirection == Line.LineDirection.horizontal)
+            {
+                rotation = Quaternion.Euler(0, 90, 0);
+            }
+            foreach (Vector3Int pos in linePos)
+            {
+                if (roadDictionary.ContainsKey(pos)) continue;
+                GameObject road = BuildRoad(roadStraight, pos, rotation, transform);
+                roadDictionary.Add(pos, road);
+                allRoadPositions.Add(pos);
             }
         }
 

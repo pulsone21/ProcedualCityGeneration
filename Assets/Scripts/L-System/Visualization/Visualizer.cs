@@ -7,14 +7,12 @@ namespace LSystem
 {
     public class Visualizer : MonoBehaviour
     {
+        [SerializeField] private int childCount; //Needed for Debug reasons
         [SerializeField] private LSystemGenerator lSystem;
         [SerializeField] private RoadHelper roadHelper;
-        [SerializeField] private GameObject pointPrefab;
-        [SerializeField] private Color lineColor;
-        [SerializeField] private Material lineMaterial;
+        [SerializeField] private LineHelper lH;
         [SerializeField] private List<Vector3Int> position = new List<Vector3Int>();
-        [SerializeField] private List<GameObject> lineEndpoints = new List<GameObject>();
-        private LineHelper lH;
+
         private int length = 1;
         public int Length
         {
@@ -52,14 +50,21 @@ namespace LSystem
         /// <param name="sequence"></param>
         public void VisualizeSequenze(string sequence)
         {
-            ConvertSentenceToLinesAndPoints(sequence);
-            FixLinesAndPoints();
+            bool linesPlaced = ConvertSentenceToLinesAndPoints(sequence);
+            // if (linesPlaced)
+            // {
+            //     GenerateRoadsOnLines(lH.GetAllLines());
+            // }
+        }
+
+        public void GetChildCount()
+        {
+            childCount = transform.childCount;
         }
 
         //Step 1 Draw Lines and Points
-        public void ConvertSentenceToLinesAndPoints(string sequence)
+        private bool ConvertSentenceToLinesAndPoints(string sequence)
         {
-            lH = new LineHelper(transform, lineMaterial, lineColor);
             Stack<AgentParameters> savePoints = new Stack<AgentParameters>();
             Vector3 currentPostion = Vector3.zero;
             Vector3 direction = Vector3.forward;
@@ -107,96 +112,20 @@ namespace LSystem
                         break;
                 }
             }
-            foreach (Vector3 pos in position)
-            {
-                lineEndpoints.Add(Instantiate(pointPrefab, pos, Quaternion.identity, transform));
-            }
+            return lH.FixLines();
         }
-
-        //Step 2 Fix Lines -> Clear Paralelle lines, snap Endpoints to Roads if needed.
-
-        private void FixLinesAndPoints()
-        {
-            lH.MergeAlignedLines(lH.GetVerticalLines());
-            lH.MergeAlignedLines(lH.GetHorizontalLines());
-            //FixPoints();
-
-        }
-
-        private void FixPoints()
-        {
-            foreach (GameObject gO in lineEndpoints)
-            {
-                Vector3Int currPos = Vector3Int.RoundToInt(gO.transform.position);
-
-
-                //do something
-            }
-            //Loop through all Points an Check if there is an Line in the nearer radius - maybe 2 Vector3Ints 
-            //Then Build a new Line towards that direction
-            //Can LineHelper knows all line Question is how do we know the coords between the start and end point of that specific line
-        }
-
 
         //Step 3 Place Basic Roads
 
         //Step 4 Fix Roads
-
-        // public void VisualizeSequenze(string sequence)
-        // {
-        //     Stack<AgentParameters> savePoints = new Stack<AgentParameters>();
-        //     Vector3 currentPostion = Vector3.zero;
-        //     Vector3 direction = Vector3.forward;
-        //     Vector3 tempPosition;
-
-        //     position.Add(currentPostion);
-        //     foreach (char letter in sequence)
-        //     {
-        //         EncodingLetters encoding = (EncodingLetters)letter;
-
-        //         switch (encoding)
-        //         {
-        //             case EncodingLetters.unknown:
-        //                 break;
-        //             case EncodingLetters.save:
-
-        //                 AgentParameters agent = new AgentParameters(currentPostion, direction, Length);
-        //                 savePoints.Push(agent);
-        //                 break;
-        //             case EncodingLetters.load:
-        //                 if (savePoints.Count > 0)
-        //                 {
-
-        //                     AgentParameters agentParameters = savePoints.Pop();
-        //                     currentPostion = agentParameters.position;
-        //                     direction = agentParameters.direction;
-        //                     Length = agentParameters.length;
-        //                 }
-        //                 else
-        //                 {
-        //                     throw new System.Exception("SavePoint Stack is empty, can not Load.");
-        //                 }
-        //                 break;
-        //             case EncodingLetters.draw:
-
-        //                 tempPosition = currentPostion;
-        //                 currentPostion += direction * Length;
-        //                 roadHelper.PlaceRoadAt(tempPosition, direction, Length);
-        //                 Length += 1;
-        //                 position.Add(currentPostion);
-        //                 break;
-        //             case EncodingLetters.turnRight:
-
-        //                 direction = Quaternion.AngleAxis(angle, Vector3.up) * direction;
-        //                 break;
-        //             case EncodingLetters.turnLeft:
-
-        //                 direction = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
-        //                 break;
-        //         }
-        //     }
-        //     roadHelper.FixRoads();
-        // }
+        private void GenerateRoadsOnLines(List<Line> lines)
+        {
+            foreach (Line line in lines)
+            {
+                roadHelper.PlaceRoadOnLine(line);
+            }
+            roadHelper.FixRoads();
+        }
 
         public void ClearHelperGameObjects()
         {
@@ -214,6 +143,8 @@ namespace LSystem
             Length = 8;
             ClearHelperGameObjects();
             roadHelper.ClearRoads();
+            lH.ClearLineList();
         }
     }
 }
+

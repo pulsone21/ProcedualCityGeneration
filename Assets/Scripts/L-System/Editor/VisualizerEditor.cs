@@ -13,6 +13,11 @@ namespace LSystem
             {
                 visualizer.ClearVisulization();
             }
+            if (GUILayout.Button("Get Child Count"))
+            {
+                visualizer.GetChildCount();
+            }
+
             base.OnInspectorGUI();
 
         }
